@@ -12,17 +12,271 @@
  * @note For more information regarding the Enhanced Universal Serial Communication Interface (eUSCI),
  * refer to the MSP432Pxx Microcontrollers Technical Reference Manual
  *
- * @author
+ * @author Aaron Funes
  *
  */
 
+#include <stdint.h>
+#include <math.h>
 #include "msp.h"
 
-int main(void)
+#include "inc/Clock.h"
+#include "inc/CortexM.h"
+#include "inc/GPIO.h"
+#include "inc/EUSCI_A0_UART.h"
+#include "inc/Motor.h"
+#include "inc/BLE_UART.h"
+
+//Initialize the constant PWM duty cycle values for the motors
+#define PWM_NOMINAL 3000
+
+void Process_BLE_UART_Data(char BLE_UART_Buffer[])
 {
+    if (Check_BLE_UART_Data(BLE_UART_Buffer,"RGB LED GREEN"))
+    {
+        LED2_Output(RGB_LED_GREEN);
+    }
+    else if (Check_BLE_UART_Data(BLE_UART_Buffer,"RGB LED OFF"))
+    {
+        LED2_Output(RGB_LED_OFF);
+    }
+    else
+    {
+        printf("BLE UART Command Not Found\n");
+    }
+}
+
+void Decode_Controller_Packet (char BLE_UART_Buffer[])
+{
+    if(BLE_UART_Buffer[0] != 0x21){
+//        printf("Error : Header Field not Valid!\n");
+//        return;
+    }
+    if(BLE_UART_Buffer[1] != 0x42){
+//        printf("Error : Not a button packet!\n");
+//       return;
+    }
+    // Change to switch case
+
+    char direction = BLE_UART_Buffer[2];
+    char button = BLE_UART_Buffer[3];
+    switch(direction) {
+        case '5' :
+        {
+            switch(button) {
+                case '1' : {
+  //                  printf("Motor Forward\n");
+                    Motor_Forward(900,900);
+                    return;
+                }
+                case '0' : {
+ //                   printf("Motor Stop\n");
+                    Motor_Stop();
+                    return;
+                }
+                default : {
+//                    printf("Error: Not a valid button state : Motor Stop!\n");
+                    Motor_Stop();
+                    return;
+                }
+            }
+        }
+        case '6' :
+        {
+            switch(button) {
+                case '1' : {
+//                    printf("Motor Backward\n");
+                    Motor_Backward(900,900);
+                    return;
+                }
+                case '0' : {
+//                    printf("Motor Stop\n");
+                    Motor_Stop();
+                    return;
+                }
+                default : {
+//                    printf("Error: Not a valid button state : Motor Stop!\n");
+                    Motor_Stop();
+                    return;
+                }
+            }
+        }
+        case '7' :
+        {
+            switch(button) {
+                case '1' : {
+//                    printf("Motor Left\n");
+                    Motor_Left(900,900);
+                    return;
+                }
+                case '0' : {
+//                    printf("Motor Stop\n");
+                    Motor_Stop();
+                    return;
+                }
+                default : {
+//                    printf("Error: Not a valid button state : Motor Stop!\n");
+                    Motor_Stop();
+                    return;
+                }
+            }
+        }
+        case '8' :
+        {
+            switch(button) {
+                case '1' : {
+//                    printf("Motor Right\n");
+                    Motor_Right(900,900);
+                    return;
+                }
+                case '0' : {
+//                    printf("Motor Stop\n");
+                    Motor_Stop();
+                    return;
+                }
+                default : {
+//                    printf("Error: Not a valid button state : Motor Stop!\n");
+                    Motor_Stop();
+                    return;
+                }
+            }
+        }
+        default :
+        {
+ //           printf("Error : Not a button to press!\n");
+            Motor_Stop();
+            return;
+        }
+    }
+}
+/*
+int test(void) {
+    // Ensure that interrupts are disable during initialization
+    DisableInterrupts();
+
+    //Initialize the 48 MHz Clock
+    Clock_Init48MHz();;
+
+    //Initialize the RGB LED on the MSP432 microcontroller
+    LED2_Init();
+
+    // Initialize the EUSCI_A0_UART module
+    EUSCI_A0_UART_Init_Printf();
+
+    // Initailze the Adafruit Bluefruit LE UART Friend module
+    BLE_UART_Init();
+
+    //Initialize the DC motors
+    Motor_Init();
+
+    //Initialize Switch
+    PMOD_SWT_Init();
+
+    // Initialize a buffer that willl be used to recieve command string from the BLE module
+    char BLE_UART_Buffer[BLE_UART_BUFFER_SIZE] = {0};
+
+    // Enable the interrups used by the modules
+    EnableInterrupts();
+
+    //Provide a short delay after intiailzation and reset the BLE module
+    Clock_Delay1ms(1000);
+    BLE_UART_Reset();
+
+    // Send a message to the BLE module to check if the connection is stable
+    BLE_UART_OutString("BLE UART Active \r\n");
+    Clock_Delay1ms(1000);
 
     while(1)
     {
-
+        uint8_t switch_status = Get_PMOD_SWT_Status();
+        switch(switch_status){
+            case 0x01:
+            {
+                BLE_UART_OutChar(0xAA);
+            }
+            case 0x02:
+            {
+                BLE_UART_OutChar(0x10);
+            }
+            case 0x04:
+            {
+                BLE_UART_OutChar(0xF0);
+            }
+            case 0x08:
+            {
+                BLE_UART_OutChar(0x0F);
+            }
+            default:
+            {
+                BLE_UART_OutChar(0x00);
+            }
+        }
+    }
+/*    while(1)
+    {
+        BLE_UART_OutChar(0xAA);
+        Clock_Delay1ms(1000);
+        BLE_UART_OutChar(0x55);
+        Clock_Delay1ms(1000);
+        BLE_UART_OutChar(0xFF);
+        Clock_Delay1ms(1000);
+        BLE_UART_OutChar(0x00);
+        Clock_Delay1ms(1000);
     }
 }
+*/
+int main(void)
+{
+    // Ensure that interrupts are disable during initialization
+    DisableInterrupts();
+
+    //Initialize the 48 MHz Clock
+    Clock_Init48MHz();
+
+    //Initialize the RGB LED on the MSP432 microcontroller
+    LED2_Init();
+
+    // Initialize the EUSCI_A0_UART module
+    EUSCI_A0_UART_Init_Printf();
+
+    // Initailze the Adafruit Bluefruit LE UART Friend module
+    BLE_UART_Init();
+
+    //Initialize the DC motors
+    Motor_Init();
+
+    // Initialize a buffer that willl be used to recieve command string from the BLE module
+    char BLE_UART_Buffer[BLE_UART_BUFFER_SIZE] = {0};
+
+    // Enable the interrups used by the modules
+    EnableInterrupts();
+
+    //Provide a short delay after intiailzation and reset the BLE module
+    Clock_Delay1ms(1000);
+    BLE_UART_Reset();
+
+    // Send a message to the BLE module to check if the connection is stable
+    BLE_UART_OutString("BLE UART Active \r\n");
+    Clock_Delay1ms(1000);
+
+    while(1)
+    {
+/*        int string_size = BLE_UART_InString(BLE_UART_Buffer, BLE_UART_BUFFER_SIZE);
+
+        printf("BLE UART Data: ");
+        for (int i=0; i<string_size;i++)
+        {
+            printf("%c", BLE_UART_Buffer[i]);
+        }
+        printf("\n");
+*/
+//        Process_BLE_UART_Data(BLE_UART_Buffer);
+        int string_size = BLE_UART_InPacket(BLE_UART_Buffer, BLE_UART_BUFFER_SIZE);
+
+//        if(string_size>0){
+            Decode_Controller_Packet(BLE_UART_Buffer);
+//        }
+    }
+}
+
+
