@@ -49,12 +49,12 @@ void Process_BLE_UART_Data(char BLE_UART_Buffer[])
 void Decode_Controller_Packet (char BLE_UART_Buffer[])
 {
     if(BLE_UART_Buffer[0] != 0x21){
-//        printf("Error : Header Field not Valid!\n");
-//        return;
+        printf("Error : Header Field not Valid!\n");
+        return;
     }
     if(BLE_UART_Buffer[1] != 0x42){
-//        printf("Error : Not a button packet!\n");
-//       return;
+        printf("Error : Not a button packet!\n");
+       return;
     }
     // Change to switch case
 
@@ -65,17 +65,17 @@ void Decode_Controller_Packet (char BLE_UART_Buffer[])
         {
             switch(button) {
                 case '1' : {
-  //                  printf("Motor Forward\n");
-                    Motor_Forward(900,900);
+                    printf("Motor Forward\n");
+                    Motor_Forward(3000,3000);
                     return;
                 }
                 case '0' : {
- //                   printf("Motor Stop\n");
+                    printf("Motor Stop\n");
                     Motor_Stop();
                     return;
                 }
                 default : {
-//                    printf("Error: Not a valid button state : Motor Stop!\n");
+                    printf("Error: Not a valid button state : Motor Stop!\n");
                     Motor_Stop();
                     return;
                 }
@@ -85,17 +85,17 @@ void Decode_Controller_Packet (char BLE_UART_Buffer[])
         {
             switch(button) {
                 case '1' : {
-//                    printf("Motor Backward\n");
-                    Motor_Backward(900,900);
+                    printf("Motor Backward\n");
+                    Motor_Backward(3000,3000);
                     return;
                 }
                 case '0' : {
-//                    printf("Motor Stop\n");
+                    printf("Motor Stop\n");
                     Motor_Stop();
                     return;
                 }
                 default : {
-//                    printf("Error: Not a valid button state : Motor Stop!\n");
+                    printf("Error: Not a valid button state : Motor Stop!\n");
                     Motor_Stop();
                     return;
                 }
@@ -105,17 +105,17 @@ void Decode_Controller_Packet (char BLE_UART_Buffer[])
         {
             switch(button) {
                 case '1' : {
-//                    printf("Motor Left\n");
-                    Motor_Left(900,900);
+                    printf("Motor Left\n");
+                    Motor_Left(3000,3000);
                     return;
                 }
                 case '0' : {
-//                    printf("Motor Stop\n");
+                    printf("Motor Stop\n");
                     Motor_Stop();
                     return;
                 }
                 default : {
-//                    printf("Error: Not a valid button state : Motor Stop!\n");
+                    printf("Error: Not a valid button state : Motor Stop!\n");
                     Motor_Stop();
                     return;
                 }
@@ -125,17 +125,17 @@ void Decode_Controller_Packet (char BLE_UART_Buffer[])
         {
             switch(button) {
                 case '1' : {
-//                    printf("Motor Right\n");
-                    Motor_Right(900,900);
+                    printf("Motor Right\n");
+                    Motor_Right(3000,3000);
                     return;
                 }
                 case '0' : {
-//                    printf("Motor Stop\n");
+                    printf("Motor Stop\n");
                     Motor_Stop();
                     return;
                 }
                 default : {
-//                    printf("Error: Not a valid button state : Motor Stop!\n");
+                    printf("Error: Not a valid button state : Motor Stop!\n");
                     Motor_Stop();
                     return;
                 }
@@ -143,8 +143,8 @@ void Decode_Controller_Packet (char BLE_UART_Buffer[])
         }
         default :
         {
- //           printf("Error : Not a button to press!\n");
-            Motor_Stop();
+            printf("Error : Not a button to press!\n");
+           Motor_Stop();
             return;
         }
     }
@@ -273,6 +273,12 @@ int main(void)
 //        Process_BLE_UART_Data(BLE_UART_Buffer);
         int string_size = BLE_UART_InPacket(BLE_UART_Buffer, BLE_UART_BUFFER_SIZE);
 
+        printf("BLE UART Data: ");
+        for (int i=0; i<string_size;i++)
+        {
+            printf("%c \n", BLE_UART_Buffer[i]);
+        }
+        printf("\n");
 //        if(string_size>0){
             Decode_Controller_Packet(BLE_UART_Buffer);
 //        }

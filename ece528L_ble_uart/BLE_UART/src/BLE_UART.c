@@ -178,15 +178,15 @@ int BLE_UART_InPacket(char *buffer_pointer, uint16_t buffer_size)
 
     // Byte 0 is Header 0x21s
     if (character == 0x21){
-        while (length < 5)
+        while (length < 4)
         {
-            if (length < buffer_size)
-            {
+//            if (length < buffer_size)
+ //           {
                 *buffer_pointer = character;
                 buffer_pointer++;
                 length++;
                 string_size++;
-            }
+//            }
             character = BLE_UART_InChar();
         }
     }
